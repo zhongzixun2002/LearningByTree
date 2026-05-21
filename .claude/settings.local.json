@@ -17,7 +17,8 @@
       "Bash(cp /Users/xanderzhong/Desktop/file/tree-learning-app/src/store/useTreeStore.ts /tmp/useTreeStore_backup.ts)",
       "Read(//tmp/**)",
       "Bash(curl -s https://api.deepseek.com/anthropic/v1/messages -H 'Content-Type: application/json' -H 'x-api-key: sk-ea9a268c23b04fc19bcee682aad995bd' -d '{ *)",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); blocks=[b for b in d['content'] if b['type']=='text']; print\\(blocks[0]['text'][:500] if blocks else 'NO TEXT BLOCK'\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); blocks=[b for b in d['content'] if b['type']=='text']; print\\(blocks[0]['text'][:500] if blocks else 'NO TEXT BLOCK'\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); blocks=[b for b in d['content'] if b['type']=='text']; print\\(blocks[0]['text'] if blocks else 'NO TEXT'\\)\")"
     ]
   }
 }

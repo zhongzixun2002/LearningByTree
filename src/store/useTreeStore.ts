@@ -464,8 +464,12 @@ export const useTreeStore = create<TreeState>((set, get) => ({
       const qNode2 = finalState.nodes[qNode.id];
       const aNode2 = finalState.nodes[aNode.id];
       if (qNode2?.question && aNode2?.answer && !aNode2.answer.startsWith('**Error:**')) {
+        console.log('[Suggestions] Fetching suggestions for:', qNode2.question.slice(0, 50));
         fetchSuggestions(finalState.apiKey, qNode2.question, aNode2.answer, finalState.model, finalState.baseUrl)
-          .then((suggestions) => set({ suggestedQuestions: suggestions }));
+          .then((suggestions) => {
+            console.log('[Suggestions] Got:', suggestions);
+            set({ suggestedQuestions: suggestions });
+          });
       }
     }
   },
