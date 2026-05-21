@@ -400,6 +400,13 @@ export const useTreeStore = create<TreeState>((set, get) => ({
       }));
     } finally {
       set({ isStreaming: false });
+      const finalState = get();
+      const qNode2 = finalState.nodes[qNode.id];
+      const aNode2 = finalState.nodes[aNode.id];
+      if (qNode2?.question && aNode2?.answer && !aNode2.answer.startsWith('**Error:**')) {
+        fetchSuggestions(finalState.apiKey, qNode2.question, aNode2.answer, finalState.model, finalState.baseUrl)
+          .then((suggestions) => set({ suggestedQuestions: suggestions }));
+      }
     }
   },
 }));

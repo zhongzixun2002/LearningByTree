@@ -117,11 +117,12 @@ export default function TreeCanvas() {
       const from = displayPositions[id];
       if (!from) continue;
       for (const childId of node.children) {
+        const child = nodes[childId];
         const to = displayPositions[childId];
-        if (visibleSet.has(childId) && to) {
+        if (visibleSet.has(childId) && to && child) {
           lines.push({
             key: `${id}-${childId}`,
-            path: getConnectorPath(from, to),
+            path: getConnectorPath(from, to, node.type, child.type),
           });
         }
       }

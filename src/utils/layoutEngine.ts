@@ -1,9 +1,11 @@
 import type { TreeNode } from '../types/tree';
 
+const Q_CARD_W = 160;
+const Q_CARD_H = 50;
+const A_CARD_W = 220;
+const A_CARD_H = 90;
 const H_GAP = 240;
 const V_GAP = 160;
-const CARD_W = 180;
-const CARD_H = 80;
 
 interface Point {
   x: number;
@@ -55,14 +57,19 @@ export function getChildPosition(
   };
 }
 
-export function getConnectorPath(from: Point, to: Point): string {
-  const x1 = from.x + CARD_W / 2;
-  const y1 = from.y + CARD_H;
-  const x2 = to.x + CARD_W / 2;
+export function getConnectorPath(
+  from: Point, to: Point,
+  fromType: 'question' | 'answer' = 'question',
+  toType: 'question' | 'answer' = 'question'
+): string {
+  const fromW = fromType === 'question' ? Q_CARD_W : A_CARD_W;
+  const fromH = fromType === 'question' ? Q_CARD_H : A_CARD_H;
+  const toW = toType === 'question' ? Q_CARD_W : A_CARD_W;
+  const x1 = from.x + fromW / 2;
+  const y1 = from.y + fromH;
+  const x2 = to.x + toW / 2;
   const y2 = to.y;
-
-  const dy = Math.max(Math.abs(y2 - y1) * 0.5, 60);
-
+  const dy = Math.max(Math.abs(y2 - y1) * 0.5, 40);
   return `M ${x1} ${y1} C ${x1} ${y1 + dy} ${x2} ${y2 - dy} ${x2} ${y2}`;
 }
 
@@ -74,8 +81,8 @@ export function getCanvasBounds(
   for (const pos of Object.values(positions)) {
     if (pos.x < minX) minX = pos.x;
     if (pos.y < minY) minY = pos.y;
-    if (pos.x + CARD_W > maxX) maxX = pos.x + CARD_W;
-    if (pos.y + CARD_H > maxY) maxY = pos.y + CARD_H;
+    if (pos.x + A_CARD_W > maxX) maxX = pos.x + A_CARD_W;
+    if (pos.y + A_CARD_H > maxY) maxY = pos.y + A_CARD_H;
   }
 
   const padding = 100;

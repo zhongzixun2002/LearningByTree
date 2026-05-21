@@ -150,8 +150,43 @@ export default function NodeDetail() {
 
           {/* Main content */}
           <div className="mb-3">
-            <div className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
-              {isQuestion ? t.questionLabel : t.answerLabel}
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                {isQuestion ? t.questionLabel : t.answerLabel}
+              </div>
+              <div className="flex gap-1">
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={handleSave}
+                      className="px-3 py-1 text-xs font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 cursor-pointer transition-colors"
+                    >
+                      {t.save}
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                    >
+                      {t.cancel}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleEdit}
+                      className="px-3 py-1 text-xs rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                    >
+                      {t.edit}
+                    </button>
+                    <button
+                      onClick={() => setShowConfirmDelete(true)}
+                      className="px-3 py-1 text-xs rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer transition-colors"
+                    >
+                      {t.delete}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
             {isEditing ? (
               <textarea
@@ -194,50 +229,6 @@ export default function NodeDetail() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className="border-t border-gray-100 dark:border-gray-800 px-5 py-3 flex items-center justify-between bg-gray-50/50 dark:bg-gray-900/50">
-        <div className="flex gap-2">
-          {isEditing ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="px-4 py-1.5 text-sm font-medium rounded-lg bg-green-600 text-white
-                           hover:bg-green-700 cursor-pointer transition-colors"
-              >
-                {t.save}
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
-                           text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800
-                           cursor-pointer transition-colors"
-              >
-                {t.cancel}
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleEdit}
-                className="px-4 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
-                           text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800
-                           cursor-pointer transition-colors"
-              >
-                {t.edit}
-              </button>
-              <button
-                onClick={() => setShowConfirmDelete(true)}
-                className="px-4 py-1.5 text-sm rounded-lg text-red-500 hover:text-red-600
-                           hover:bg-red-50 dark:hover:bg-red-950/30
-                           cursor-pointer transition-colors"
-              >
-                {t.delete}
-              </button>
-            </>
-          )}
         </div>
       </div>
 
