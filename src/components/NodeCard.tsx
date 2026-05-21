@@ -27,11 +27,13 @@ function NodeCard({
   const toggleCollapse = useTreeStore((s) => s.toggleCollapse);
   const collapsedIds = useTreeStore((s) => s.collapsedIds);
   const updateNodePosition = useTreeStore((s) => s.updateNodePosition);
+  const markExplored = useTreeStore((s) => s.markExplored);
 
   const isSelected = selectedNodeId === node.id;
   const isCollapsed = collapsedIds.has(node.id);
   const hasChildren = node.children.length > 0;
   const isQuestion = node.type === 'question';
+  const isSkeleton = node.status === 'skeleton';
 
   const cardRef = useRef<HTMLDivElement>(null);
   const dragState = useRef({ dragging: false, moved: false, sx: 0, sy: 0, px: 0, py: 0 });
@@ -109,9 +111,11 @@ function NodeCard({
   const cardW = isQuestion ? Q_CARD_W : A_CARD_W;
   const cardH = isQuestion ? Q_CARD_H : A_CARD_H;
 
-  const typeColors = isQuestion
-    ? 'border-l-indigo-400 bg-white dark:bg-gray-800/90'
-    : 'border-l-emerald-400 bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/20 dark:to-gray-800/80';
+  const typeColors = isSkeleton
+    ? 'border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30'
+    : isQuestion
+      ? 'border-l-indigo-400 bg-white dark:bg-gray-800/90'
+      : 'border-l-emerald-400 bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/20 dark:to-gray-800/80';
 
   const cardRadius = isQuestion ? 'rounded-2xl' : 'rounded-xl';
 
@@ -136,7 +140,7 @@ function NodeCard({
         minHeight: cardH,
       }}
       onMouseDown={handleMouseDown}
-      onClick={() => { if (!dragState.current.moved) selectNode(node.id); }}
+      onClick={() => { if (!dragState.current.moved) { selectNode(node.id); if (node.status === 'skeleton') markExplored(node.id); } }}
     >
       <div className={isQuestion ? 'px-3 py-2' : 'px-3 py-2.5'}>
         <div className="flex items-center gap-1.5 mb-1">
