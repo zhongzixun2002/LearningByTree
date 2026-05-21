@@ -1,5 +1,52 @@
 import type { Message } from '../types/tree';
 
+export async function generateLearningPath(
+  apiKey: string, topic: string, model: string, baseUrl: string
+): Promise<{ title: string; nodes: { question: string; children?: { question: string; children?: any[] }[] }[] }> {
+  const url = `${baseUrl.replace(/\/+$/, '')}/v1/messages`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+    body: JSON.stringify({
+      model, max_tokens: 1024,
+      messages: [{ role: 'user', content: `Create a learning path for: "${topic}". Return ONLY valid JSON: { "title": "Learning: topic", "nodes": [{ "question": "subtopic question", "children": [{ "question": "specific question" }] }] }. Aim for 3-4 subtopics each with 1-2 questions. Keep questions concise.` }],
+    }),
+  });
+  if (!response.ok) throw new Error(`API Error: ${response.status}`);
+  const data = await response.json();
+  const text = data.content?.[0]?.text || '';
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Invalid response format');
+  return JSON.parse(match[0]);
+}
+
+export async function fetchSuggestions(
+  apiKey: string,
+  question: string,
+  answer: string,
+  model: string,
+  baseUrl: string
+): Promise<string[]> {
+  const url = `${baseUrl.replace(/\/+$/, '')}/v1/messages`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+    body: JSON.stringify({
+      model,
+      max_tokens: 256,
+      messages: [{ role: 'user', content: `Based on this Q&A, suggest 3 concise follow-up questions the learner might ask next. Return ONLY a JSON array of strings, no other text.\n\nQuestion: ${question}\n\nAnswer: ${answer.slice(0, 1000)}` }],
+    }),
+  });
+  if (!response.ok) return [];
+  try {
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    const match = text.match(/\[[\s\S]*\]/);
+    if (match) return JSON.parse(match[0]);
+  } catch {}
+  return [];
+}
+
 export async function* streamClaudeResponse(
   apiKey: string,
   messages: Message[],
