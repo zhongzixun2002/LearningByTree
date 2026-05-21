@@ -1,0 +1,85 @@
+<h2>三项改进点概览</h2>
+<p class="subtitle">自动持久化 + 树导航流畅度 + Markdown 渲染增强</p>
+
+<div class="section">
+  <h3>改进 1: 自动持久化</h3>
+  <p>页面刷新后树数据自动恢复，Toolbar 顶部显示保存状态指示器。</p>
+  <div class="mockup">
+    <div class="mockup-header">Toolbar 顶部</div>
+    <div class="mockup-body">
+      <div class="mock-nav" style="display:flex;align-items:center;gap:8px">
+        <span>🌳 JavaScript 闭包学习</span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block" title="已保存"></span>
+        <span style="font-size:11px;color:#6b7280">自动已保存 · 12:03</span>
+      </div>
+    </div>
+  </div>
+  <div class="pros-cons">
+    <div class="pros"><h4>改动</h4><ul><li>Store subscribe → localStorage 防抖写入</li><li>启动时优先读取 localStorage，无则用示例数据</li><li>~5MB 上限时给出提示</li></ul></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>改进 2: 树视图交互增强</h3>
+  <p>选中节点时树自动滚动到视野内；方向键切换选中节点；展开/折叠带过渡动画。</p>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Before: 节点在视野外</div>
+      <div class="mockup-body" style="overflow:hidden;max-height:140px;position:relative">
+        <div style="position:absolute;top:0;left:0;right:0;height:60px;background:linear-gradient(to bottom,rgba(255,255,255,0.9),transparent);z-index:1"></div>
+        <div class="placeholder" style="margin-top:8px">[根] 什么是 JavaScript 闭包？</div>
+        <div class="placeholder" style="opacity:0.5;font-size:11px;margin:4px 0">↳ [子1] 闭包的应用场景？</div>
+        <div class="placeholder" style="opacity:0.3;font-size:11px;margin:4px 0">↳ [子2] 闭包在实际开发中？</div>
+        <div class="placeholder" style="opacity:0.2;font-size:11px;margin:4px 0">↳ [孙] 代码示例？</div>
+        <div style="border:2px solid #3b82f6;border-radius:6px;padding:2px 6px;font-size:11px;background:rgba(59,130,246,0.1)">🎯 选中但不可见</div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">After: 自动滚动到选中节点</div>
+      <div class="mockup-body" style="overflow:hidden;max-height:140px">
+        <div style="border:2px solid #3b82f6;border-radius:6px;padding:2px 6px;font-size:11px;background:rgba(59,130,246,0.1);margin-bottom:4px">🎯 自动滚到这里</div>
+        <div class="placeholder" style="opacity:0.3;font-size:11px;margin:4px 0">↳ [子2] 闭包在实际开发中？</div>
+        <div class="placeholder" style="opacity:0.2;font-size:11px;margin:4px 0">↳ [孙] 代码示例？</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>改进 3: 快捷键 &amp; 引导</h3>
+  <p>方向键导航，按 <kbd>?</kbd> 显示快捷键面板。</p>
+  <div class="mockup">
+    <div class="mockup-header">快捷键提示面板</div>
+    <div class="mockup-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+        <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8fafc;border-radius:4px"><span>↑ ↓</span><span style="color:#64748b">切换选中节点</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8fafc;border-radius:4px"><span>← →</span><span style="color:#64748b">展开/折叠节点</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8fafc;border-radius:4px"><span>Enter</span><span style="color:#64748b">聚焦输入框</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8fafc;border-radius:4px"><span>Ctrl+Enter</span><span style="color:#64748b">发送提问</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8fafc;border-radius:4px"><span>E</span><span style="color:#64748b">编辑当前节点</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8fafc;border-radius:4px"><span>Delete</span><span style="color:#64748b">删除当前节点</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>改进 4: 展开/折叠动画</h3>
+  <p>子树展开折叠使用 CSS transition — max-height + opacity 过渡，而不是瞬间消失。</p>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Before: 瞬间变化</div>
+      <div class="mockup-body">
+        <div class="placeholder">[父节点] 点击折叠</div>
+        <div style="font-size:11px;color:#94a3b8;text-align:center;margin:4px 0">⬇ 子树直接消失 ⬇</div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">After: 250ms 平滑收起</div>
+      <div class="mockup-body">
+        <div class="placeholder">[父节点] 点击折叠</div>
+        <div style="font-size:11px;color:#3b82f6;text-align:center;margin:4px 0">⬇ max-height → 0, opacity → 0 ⬇</div>
+      </div>
+    </div>
+  </div>
+</div>
