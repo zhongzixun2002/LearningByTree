@@ -124,6 +124,7 @@ function NodeCard({
   return (
     <div
       ref={cardRef}
+      data-node-card
       className={`
         absolute border border-l-[3px] cursor-pointer select-none
         transition-shadow duration-200 ${cardRadius}

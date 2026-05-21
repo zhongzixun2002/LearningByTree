@@ -11,7 +11,11 @@
       "Bash(git commit *)",
       "Bash(git config *)",
       "Bash(git rm *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(git -C /Users/xanderzhong/Desktop/file/tree-learning-app add src/api/claude.ts src/store/useTreeStore.ts src/components/SuggestionChips.tsx)",
+      "Bash(git -C /Users/xanderzhong/Desktop/file/tree-learning-app commit -m \"feat: add AI-powered follow-up suggestion chips\")",
+      "Bash(cp /Users/xanderzhong/Desktop/file/tree-learning-app/src/store/useTreeStore.ts /tmp/useTreeStore_backup.ts)",
+      "Read(//tmp/**)"
     ]
   }
 }

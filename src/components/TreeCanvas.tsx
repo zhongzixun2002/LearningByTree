@@ -32,19 +32,24 @@ export default function TreeCanvas() {
 
   const handlePanMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
+    if ((e.target as HTMLElement).closest('[data-node-card]')) return;
     if (!containerRef.current) return;
+    const startX = e.clientX;
+    const startY = e.clientY;
     panRef.current = {
       panning: true,
-      sx: e.clientX,
-      sy: e.clientY,
+      sx: startX,
+      sy: startY,
       sl: containerRef.current.scrollLeft,
       st: containerRef.current.scrollTop,
     };
     document.body.style.cursor = 'grabbing';
     document.body.style.userSelect = 'none';
 
+    let moved = false;
     const handleMove = (ev: MouseEvent) => {
       if (!panRef.current.panning) return;
+      if (Math.abs(ev.clientX - startX) > 3 || Math.abs(ev.clientY - startY) > 3) moved = true;
       containerRef.current!.scrollLeft = panRef.current.sl - (ev.clientX - panRef.current.sx);
       containerRef.current!.scrollTop = panRef.current.st - (ev.clientY - panRef.current.sy);
     };
@@ -52,6 +57,9 @@ export default function TreeCanvas() {
       panRef.current.panning = false;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      if (!moved) {
+        useTreeStore.getState().selectNode(null);
+      }
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mouseup', handleUp);
     };
