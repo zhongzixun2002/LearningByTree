@@ -143,7 +143,7 @@ export default function TreeCanvas() {
   }, []);
 
   return (
-    <div ref={containerRef} className="flex-1 overflow-auto bg-white/30 dark:bg-gray-900/30 relative" onMouseDown={handlePanMouseDown}>
+    <div ref={containerRef} className="absolute inset-0 overflow-auto bg-white/30 dark:bg-gray-900/30 cursor-grab active:cursor-grabbing" onMouseDown={handlePanMouseDown}>
       <div style={{ width: canvasW * zoom, height: canvasH * zoom }}>
         <div
           className="relative"

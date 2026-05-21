@@ -3,7 +3,12 @@ import { useTreeStore } from '../store/useTreeStore';
 import type { TreeData } from '../types/tree';
 import { t } from '../i18n/en';
 
-export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
+interface TopBarProps {
+  onOpenSettings: () => void;
+  onGeneratePath: () => void;
+}
+
+export default function TopBar({ onOpenSettings, onGeneratePath }: TopBarProps) {
   const title = useTreeStore((s) => s.title);
   const setTitle = useTreeStore((s) => s.setTitle);
   const newTree = useTreeStore((s) => s.newTree);
@@ -43,7 +48,7 @@ export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void
   };
 
   return (
-    <header className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+    <header className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 z-10">
       <div className="flex items-center gap-3">
         <span className="text-lg">🌳</span>
         {editingTitle ? (
@@ -107,6 +112,14 @@ export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void
           ↓ {t.exportTree}
         </button>
         <div className="w-px h-5 mx-1 bg-gray-200 dark:bg-gray-700" />
+        <button
+          onClick={onGeneratePath}
+          className="px-3 py-1.5 text-sm rounded-lg border border-purple-200 dark:border-purple-700
+                     text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30
+                     cursor-pointer transition-colors"
+        >
+          ✨ {t.generatePath}
+        </button>
         <button
           onClick={onOpenSettings}
           className="px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-600 text-white
