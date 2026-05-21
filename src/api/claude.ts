@@ -2,8 +2,14 @@ import type { Message } from '../types/tree';
 
 // Extract text from various API response formats (Anthropic, OpenAI, DeepSeek)
 function extractTextFromResponse(data: any): string {
-  // Anthropic format: { content: [{ text: "..." }] }
-  if (data.content?.[0]?.text) return data.content[0].text;
+  // Anthropic format: { content: [{ type: "text", text: "..." }, ...] }
+  // May include "thinking" blocks — find the first "text" type block
+  if (Array.isArray(data.content)) {
+    const textBlock = data.content.find((b: any) => b.type === 'text');
+    if (textBlock?.text) return textBlock.text;
+    // Fallback: try first block's text field
+    if (data.content[0]?.text) return data.content[0].text;
+  }
   // OpenAI format: { choices: [{ message: { content: "..." } }] }
   if (data.choices?.[0]?.message?.content) return data.choices[0].message.content;
   // Fallback: stringified
