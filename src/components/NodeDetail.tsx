@@ -3,6 +3,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 import { useTreeStore } from '../store/useTreeStore';
+import { t } from '../i18n/en';
 
 function CodeBlock({ className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { className?: string }) {
   const match = /language-(\w+)/.exec(className || '');
@@ -32,7 +33,7 @@ function CodeBlock({ className, children, ...props }: React.ComponentPropsWithou
           className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-0.5 rounded
                      hover:bg-gray-300/50 dark:hover:bg-gray-600/50 cursor-pointer"
         >
-          {copied ? '已复制' : '复制'}
+          {copied ? t.copied : t.copy}
         </button>
       </div>
       <pre className="!mt-0 !rounded-t-none !rounded-b-xl !bg-[#1e1e2e] !text-[#cdd6f4] !p-4 !text-sm !leading-relaxed overflow-x-auto">
@@ -103,7 +104,7 @@ export default function NodeDetail() {
   if (!node) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-        选择一个节点查看详情
+        {t.selectNode}
       </div>
     );
   }
@@ -141,7 +142,7 @@ export default function NodeDetail() {
               >
                 <span>↩</span>
                 <span className="truncate max-w-md">
-                  Q: {parentQuestion.question || '空问题'}
+                  Q: {parentQuestion.question || t.emptyQuestion}
                 </span>
               </button>
             </div>
@@ -150,7 +151,7 @@ export default function NodeDetail() {
           {/* Main content */}
           <div className="mb-3">
             <div className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
-              {isQuestion ? '问题' : '回答'}
+              {isQuestion ? t.questionLabel : t.answerLabel}
             </div>
             {isEditing ? (
               <textarea
@@ -166,7 +167,7 @@ export default function NodeDetail() {
             ) : isQuestion ? (
               <div className="text-[15px] font-semibold leading-relaxed text-gray-900 dark:text-gray-100 tracking-tight">
                 {node.question || (
-                  <span className="text-gray-300 dark:text-gray-600 italic">空问题 — 在下方输入你的第一个问题</span>
+                  <span className="text-gray-300 dark:text-gray-600 italic">{t.emptyQuestion}</span>
                 )}
               </div>
             ) : (
@@ -182,12 +183,12 @@ export default function NodeDetail() {
                       <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                       <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </span>
-                    <span className="text-gray-400 text-sm">AI 正在思考...</span>
+                    <span className="text-gray-400 text-sm">{t.aiThinking}</span>
                   </div>
                 ) : (
                   <div className="py-8 text-center text-gray-300 dark:text-gray-600">
                     <div className="text-3xl mb-2">💡</div>
-                    <div className="text-sm">等待 AI 生成回答...</div>
+                    <div className="text-sm">{t.waitingAI}</div>
                   </div>
                 )}
               </div>
@@ -206,7 +207,7 @@ export default function NodeDetail() {
                 className="px-4 py-1.5 text-sm font-medium rounded-lg bg-green-600 text-white
                            hover:bg-green-700 cursor-pointer transition-colors"
               >
-                保存修改
+                {t.save}
               </button>
               <button
                 onClick={() => setIsEditing(false)}
@@ -214,7 +215,7 @@ export default function NodeDetail() {
                            text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800
                            cursor-pointer transition-colors"
               >
-                取消
+                {t.cancel}
               </button>
             </>
           ) : (
@@ -225,7 +226,7 @@ export default function NodeDetail() {
                            text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800
                            cursor-pointer transition-colors"
               >
-                编辑
+                {t.edit}
               </button>
               <button
                 onClick={() => setShowConfirmDelete(true)}
@@ -233,7 +234,7 @@ export default function NodeDetail() {
                            hover:bg-red-50 dark:hover:bg-red-950/30
                            cursor-pointer transition-colors"
               >
-                删除
+                {t.delete}
               </button>
             </>
           )}
@@ -251,10 +252,10 @@ export default function NodeDetail() {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
-              确认删除
+              {t.confirmDelete}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 leading-relaxed">
-              删除此{isQuestion ? '问题' : '回答'}及其所有子节点？此操作不可撤销。
+              {t.confirmDeleteMsg(isQuestion ? t.questionLabel.toLowerCase() : t.answerLabel.toLowerCase())}
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -263,14 +264,14 @@ export default function NodeDetail() {
                            text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700
                            cursor-pointer transition-colors"
               >
-                取消
+                {t.cancel}
               </button>
               <button
                 onClick={handleDelete}
                 className="px-4 py-2 text-sm font-medium rounded-xl bg-red-600 text-white
                            hover:bg-red-700 cursor-pointer transition-colors"
               >
-                确认删除
+                {t.confirmDelete}
               </button>
             </div>
           </div>

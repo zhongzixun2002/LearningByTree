@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback, memo } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
 import type { TreeNode } from '../types/tree';
+import { t } from '../i18n/en';
 
 const Q_CARD_W = 160;
 const Q_CARD_H = 50;
@@ -114,7 +115,7 @@ function NodeCard({
 
   const cardRadius = isQuestion ? 'rounded-2xl' : 'rounded-xl';
 
-  const emptyText = isQuestion ? '点击提问' : '等待回答';
+  const emptyText = isQuestion ? t.clickToExplore : t.waitingAI;
 
   return (
     <div
@@ -147,10 +148,10 @@ function NodeCard({
             {isQuestion ? 'Q' : 'A'}
           </span>
           {!isQuestion && node.answer && (
-            <span className="text-[9px] text-gray-400 ml-auto">{node.answer.length}字</span>
+            <span className="text-[9px] text-gray-400 ml-auto">{node.answer.length} {t.chars}</span>
           )}
           {dragState.current.dragging && dragState.current.moved ? (
-            <span className="text-[9px] text-gray-400 ml-auto">拖动中</span>
+            <span className="text-[9px] text-gray-400 ml-auto">{t.dragging}</span>
           ) : null}
         </div>
         {isQuestion ? (

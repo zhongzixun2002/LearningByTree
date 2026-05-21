@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
 import type { TreeData } from '../types/tree';
+import { t } from '../i18n/en';
 
 export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
   const title = useTreeStore((s) => s.title);
@@ -24,10 +25,10 @@ export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void
         if (data.nodes && data.rootId && data.metadata) {
           importTree(data);
         } else {
-          alert('无效的文件格式');
+          alert(t.invalidFileFormat);
         }
       } catch {
-        alert('无法解析 JSON 文件');
+        alert(t.cannotParseJson);
       }
     };
     reader.readAsText(file);
@@ -67,7 +68,7 @@ export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void
             className="text-[15px] font-semibold tracking-tight text-gray-800 dark:text-gray-100
                        hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer
                        transition-colors flex items-center gap-1.5 group"
-            title="点击编辑标题"
+            title={t.editTitle}
           >
             {title}
             <span className="text-[10px] opacity-0 group-hover:opacity-50 transition-opacity">
@@ -85,7 +86,7 @@ export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void
                      hover:text-gray-800 dark:hover:text-gray-200
                      cursor-pointer transition-colors"
         >
-          ← 新建
+          ← {t.newTree}
         </button>
         <button
           onClick={handleImport}
@@ -94,7 +95,7 @@ export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void
                      hover:text-gray-800 dark:hover:text-gray-200
                      cursor-pointer transition-colors"
         >
-          ↑ 导入
+          ↑ {t.importTree}
         </button>
         <button
           onClick={exportTree}
@@ -103,7 +104,7 @@ export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void
                      hover:text-gray-800 dark:hover:text-gray-200
                      cursor-pointer transition-colors"
         >
-          ↓ 导出
+          ↓ {t.exportTree}
         </button>
         <div className="w-px h-5 mx-1 bg-gray-200 dark:bg-gray-700" />
         <button
@@ -111,7 +112,7 @@ export default function Toolbar({ onOpenSettings }: { onOpenSettings: () => void
           className="px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-600 text-white
                      hover:bg-blue-700 cursor-pointer transition-colors shadow-sm shadow-blue-500/20"
         >
-          API 设置
+          {t.apiSettings}
         </button>
       </div>
       <input
