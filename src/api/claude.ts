@@ -1,5 +1,16 @@
 import type { Message } from '../types/tree';
 
+// Extract text from various API response formats (Anthropic, OpenAI, DeepSeek)
+function extractTextFromResponse(data: any): string {
+  // Anthropic format: { content: [{ text: "..." }] }
+  if (data.content?.[0]?.text) return data.content[0].text;
+  // OpenAI format: { choices: [{ message: { content: "..." } }] }
+  if (data.choices?.[0]?.message?.content) return data.choices[0].message.content;
+  // Fallback: stringified
+  if (typeof data === 'string') return data;
+  return '';
+}
+
 export async function generateLearningPath(
   apiKey: string, topic: string, model: string, baseUrl: string
 ): Promise<{ title: string; nodes: { question: string; children?: { question: string; children?: any[] }[] }[] }> {
@@ -8,16 +19,26 @@ export async function generateLearningPath(
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
     body: JSON.stringify({
-      model, max_tokens: 1024,
-      messages: [{ role: 'user', content: `Create a learning path for: "${topic}". Return ONLY valid JSON: { "title": "Learning: topic", "nodes": [{ "question": "subtopic question", "children": [{ "question": "specific question" }] }] }. Aim for 3-4 subtopics each with 1-2 questions. Keep questions concise.` }],
+      model, max_tokens: 2048,
+      messages: [{ role: 'user', content: `Create a learning path for: "${topic}". Return ONLY valid JSON with this exact structure, no markdown, no code fences, no explanation:\n{"title": "Learning: ${topic}", "nodes": [{"question": "subtopic", "children": [{"question": "specific question"}]}]}\nAim for 3-4 subtopics each with 1-2 questions.` }],
     }),
   });
-  if (!response.ok) throw new Error(`API Error: ${response.status}`);
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`API Error (${response.status}): ${errText.slice(0, 200)}`);
+  }
   const data = await response.json();
-  const text = data.content?.[0]?.text || '';
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('Invalid response format');
-  return JSON.parse(match[0]);
+  const text = extractTextFromResponse(data);
+  if (!text) throw new Error('Empty response from API');
+  // Try to find JSON in response (might be wrapped in markdown code fences)
+  const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Could not parse learning path from response. Raw: ' + text.slice(0, 200));
+  try {
+    return JSON.parse(match[0]);
+  } catch (e) {
+    throw new Error('Invalid JSON in response: ' + (e as Error).message);
+  }
 }
 
 export async function fetchSuggestions(
@@ -34,14 +55,15 @@ export async function fetchSuggestions(
     body: JSON.stringify({
       model,
       max_tokens: 256,
-      messages: [{ role: 'user', content: `Based on this Q&A, suggest 3 concise follow-up questions the learner might ask next. Return ONLY a JSON array of strings, no other text.\n\nQuestion: ${question}\n\nAnswer: ${answer.slice(0, 1000)}` }],
+      messages: [{ role: 'user', content: `Based on this Q&A, suggest 3 concise follow-up questions the learner might ask next. Return ONLY a JSON array of strings, no markdown, no code fences, no explanation.\n\nQuestion: ${question}\n\nAnswer: ${answer.slice(0, 1000)}` }],
     }),
   });
   if (!response.ok) return [];
   try {
     const data = await response.json();
-    const text = data.content?.[0]?.text || '';
-    const match = text.match(/\[[\s\S]*\]/);
+    const text = extractTextFromResponse(data);
+    const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    const match = cleaned.match(/\[[\s\S]*\]/);
     if (match) return JSON.parse(match[0]);
   } catch {}
   return [];
