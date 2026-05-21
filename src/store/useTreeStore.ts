@@ -8,7 +8,7 @@ import {
   getDescendantIds,
   downloadJSON,
 } from '../utils/treeHelpers';
-import { streamClaudeResponse, generateLearningPath } from '../api/claude';
+import { streamClaudeResponse, fetchSuggestions } from '../api/claude';
 
 interface TreeState {
   nodes: Record<string, TreeNode>;
@@ -129,7 +129,7 @@ export const useTreeStore = create<TreeState>((set, get) => ({
   model: settings.model,
   baseUrl: settings.baseUrl,
 
-  selectNode: (id) => set({ selectedNodeId: id }),
+  selectNode: (id) => set({ selectedNodeId: id, suggestedQuestions: [] }),
 
   addNode: (type, parentId, text) => {
     const node = createNode(type, text, parentId);
