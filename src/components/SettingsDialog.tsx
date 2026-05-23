@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
-import { t } from '../i18n/en';
 
 export default function SettingsDialog({
   open,
@@ -35,12 +34,12 @@ export default function SettingsDialog({
     >
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 w-[480px] max-w-[90vw]">
         <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-          {t.settings}
+          设置
         </h2>
 
         <label className="block mb-4">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {t.apiKeyLabel}
+            API Key
           </span>
           <input
             type="password"
@@ -53,13 +52,13 @@ export default function SettingsDialog({
             onChange={(e) => setLocalKey(e.target.value)}
           />
           <p className="text-xs text-gray-500 mt-1">
-            {t.apiKeyStoredLocally}
+            API Key 仅存储在本地浏览器中，不会上传到服务器
           </p>
         </label>
 
         <label className="block mb-4">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {t.baseUrlLabel}
+            API Base URL
           </span>
           <input
             type="text"
@@ -72,13 +71,13 @@ export default function SettingsDialog({
             onChange={(e) => setLocalBaseUrl(e.target.value)}
           />
           <p className="text-xs text-gray-500 mt-1">
-            {t.baseUrlHint}
+            兼容 Anthropic API 格式的端点地址。DeepSeek: https://api.deepseek.com/anthropic
           </p>
         </label>
 
         <label className="block mb-6">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {t.modelLabel}
+            模型
           </span>
           <select
             className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600
@@ -100,14 +99,14 @@ export default function SettingsDialog({
                        cursor-pointer transition-colors"
             onClick={onClose}
           >
-            {t.cancel}
+            取消
           </button>
           <button
             className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white
                        hover:bg-blue-700 cursor-pointer transition-colors"
             onClick={handleSave}
           >
-            {t.save}
+            保存
           </button>
         </div>
       </div>

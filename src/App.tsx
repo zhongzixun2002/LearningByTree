@@ -1,40 +1,60 @@
-import { useState, useCallback, useEffect } from 'react';
-import TopBar from './components/TopBar';
-import TreeCanvas from './components/TreeCanvas';
-import DetailPanel from './components/DetailPanel';
-import Minimap from './components/Minimap';
-import SearchModal from './components/SearchModal';
-import LearningPathDialog from './components/LearningPathDialog';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import Toolbar from './components/Toolbar';
+import TreeView from './components/TreeView';
+import NodeDetail from './components/NodeDetail';
+import ChatInput from './components/ChatInput';
 import SettingsDialog from './components/SettingsDialog';
 import { useTreeStore } from './store/useTreeStore';
 import { getVisibleNodeIds } from './utils/treeHelpers';
 
+const MIN_LEFT = 260;
+const MAX_LEFT_RATIO = 0.5;
+
 export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [pathDialogOpen, setPathDialogOpen] = useState(false);
+  const [leftWidth, setLeftWidth] = useState(380);
+  const isDragging = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chatTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const selectNode = useTreeStore((s) => s.selectNode);
   const toggleCollapse = useTreeStore((s) => s.toggleCollapse);
-  const selectedNodeId = useTreeStore((s) => s.selectedNodeId);
 
-  // Keyboard navigation + shortcuts
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const maxWidth = rect.width * MAX_LEFT_RATIO;
+    let newWidth = e.clientX - rect.left;
+    newWidth = Math.max(MIN_LEFT, Math.min(maxWidth, newWidth));
+    setLeftWidth(newWidth);
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+K to open search
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setSearchOpen(true);
-        return;
-      }
-
-      // Escape to close modals
-      if (e.key === 'Escape') {
-        if (searchOpen) { setSearchOpen(false); return; }
-        if (pathDialogOpen) { setPathDialogOpen(false); return; }
-        if (settingsOpen) { setSettingsOpen(false); return; }
-      }
-
       // Don't intercept when typing in inputs
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -78,29 +98,55 @@ export default function App() {
           }
           break;
         }
+        case 'Enter': {
+          e.preventDefault();
+          chatTextareaRef.current?.focus();
+          break;
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectNode, toggleCollapse, searchOpen, pathDialogOpen, settingsOpen]);
-
-  const handleCloseSearch = useCallback(() => setSearchOpen(false), []);
-  const handleClosePath = useCallback(() => setPathDialogOpen(false), []);
+  }, [selectNode, toggleCollapse]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 selection:bg-blue-200/50 dark:selection:bg-blue-800/50">
-      <TopBar
-        onOpenSettings={() => setSettingsOpen(true)}
-        onGeneratePath={() => setPathDialogOpen(true)}
-      />
-      <div className="flex-1 relative overflow-hidden">
-        <TreeCanvas />
-        <DetailPanel open={!!selectedNodeId} />
-        <Minimap />
+      <Toolbar onOpenSettings={() => setSettingsOpen(true)} />
+
+      <div ref={containerRef} className="flex-1 flex overflow-hidden">
+        {/* Left: Tree View */}
+        <div
+          className="flex flex-col bg-white/50 dark:bg-gray-900/50 flex-shrink-0 overflow-hidden"
+          style={{ width: leftWidth }}
+        >
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+              知识树
+            </span>
+            <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-auto">
+              ↑↓导航 ←→折叠 Enter提问
+            </span>
+          </div>
+          <TreeView />
+        </div>
+
+        {/* Drag Handle */}
+        <div
+          onMouseDown={handleMouseDown}
+          className="w-1.5 flex-shrink-0 cursor-col-resize relative group z-10"
+        >
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 group-hover:w-1.5 bg-transparent group-hover:bg-blue-400/50 transition-all duration-200" />
+        </div>
+
+        {/* Right: Detail + Chat */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <NodeDetail />
+          <ChatInput ref={chatTextareaRef} />
+        </div>
       </div>
-      {searchOpen && <SearchModal onClose={handleCloseSearch} />}
-      {pathDialogOpen && <LearningPathDialog onClose={handleClosePath} />}
+
       <SettingsDialog
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}

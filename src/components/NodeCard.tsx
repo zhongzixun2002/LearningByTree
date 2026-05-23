@@ -1,12 +1,9 @@
 import { useRef, useState, useEffect, useCallback, memo } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
 import type { TreeNode } from '../types/tree';
-import { t } from '../i18n/en';
 
-const Q_CARD_W = 160;
-const Q_CARD_H = 50;
-const A_CARD_W = 220;
-const A_CARD_H = 90;
+const CARD_W = 180;
+const CARD_H = 80;
 const DRAG_THRESHOLD = 4;
 
 function NodeCard({
@@ -14,38 +11,32 @@ function NodeCard({
   position,
   zoom,
   onDrag,
-  boundsOffset,
 }: {
   node: TreeNode;
   position: { x: number; y: number };
   zoom: number;
   onDrag?: (id: string, pos: { x: number; y: number } | null) => void;
-  boundsOffset: { x: number; y: number };
 }) {
   const selectedNodeId = useTreeStore((s) => s.selectedNodeId);
   const selectNode = useTreeStore((s) => s.selectNode);
   const toggleCollapse = useTreeStore((s) => s.toggleCollapse);
   const collapsedIds = useTreeStore((s) => s.collapsedIds);
   const updateNodePosition = useTreeStore((s) => s.updateNodePosition);
-  const markExplored = useTreeStore((s) => s.markExplored);
 
   const isSelected = selectedNodeId === node.id;
   const isCollapsed = collapsedIds.has(node.id);
   const hasChildren = node.children.length > 0;
   const isQuestion = node.type === 'question';
-  const isSkeleton = node.status === 'skeleton';
 
   const cardRef = useRef<HTMLDivElement>(null);
   const dragState = useRef({ dragging: false, moved: false, sx: 0, sy: 0, px: 0, py: 0 });
   const dragPosRef = useRef<{ x: number; y: number } | null>(null);
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  const justDragged = useRef(false);
 
   useEffect(() => {
-    if (isSelected && cardRef.current && !justDragged.current) {
+    if (isSelected && cardRef.current) {
       cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
     }
-    justDragged.current = false;
   }, [isSelected]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -80,16 +71,14 @@ function NodeCard({
     const handleUp = () => {
       if (dragState.current.dragging) {
         const finalPos = dragPosRef.current;
-        const displayX = dragState.current.moved
+        const dx = dragState.current.moved
           ? (finalPos?.x ?? dragState.current.px)
           : position.x;
-        const displayY = dragState.current.moved
+        const dy = dragState.current.moved
           ? (finalPos?.y ?? dragState.current.py)
           : position.y;
         if (dragState.current.moved) {
-          justDragged.current = true;
-          // Convert display coordinates back to absolute coordinates
-          updateNodePosition(node.id, { x: displayX + boundsOffset.x, y: displayY + boundsOffset.y });
+          updateNodePosition(node.id, { x: dx, y: dy });
         }
         onDrag?.(node.id, null);
         dragPosRef.current = null;
@@ -108,42 +97,34 @@ function NodeCard({
 
   const displayPos = dragPos ?? position;
 
-  const cardW = isQuestion ? Q_CARD_W : A_CARD_W;
-  const cardH = isQuestion ? Q_CARD_H : A_CARD_H;
+  const typeColors = isQuestion
+    ? 'border-l-indigo-400 bg-gradient-to-r from-indigo-50/80 to-white dark:from-indigo-950/30 dark:to-gray-800/80'
+    : 'border-l-emerald-400 bg-gradient-to-r from-emerald-50/80 to-white dark:from-emerald-950/30 dark:to-gray-800/80';
 
-  const typeColors = isSkeleton
-    ? 'border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30'
-    : isQuestion
-      ? 'border-l-indigo-400 bg-white dark:bg-gray-800/90'
-      : 'border-l-emerald-400 bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/20 dark:to-gray-800/80';
-
-  const cardRadius = isQuestion ? 'rounded-2xl' : 'rounded-xl';
-
-  const emptyText = isQuestion ? t.clickToExplore : t.waitingAI;
+  const emptyText = isQuestion ? '点击提问' : '等待回答';
 
   return (
     <div
       ref={cardRef}
-      data-node-card
       className={`
-        absolute border border-l-[3px] cursor-pointer select-none
-        transition-shadow duration-200 ${cardRadius}
+        absolute rounded-xl border border-l-[3px] text-sm cursor-pointer select-none
+        transition-shadow duration-200
         ${typeColors}
         ${isSelected
-          ? '!border-l-blue-500 !border-blue-500 shadow-lg shadow-blue-500/15 z-10 ring-2 ring-blue-500/30'
-          : 'border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
+          ? '!border-l-blue-500 !border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/15 z-10 ring-2 ring-blue-500/30'
+          : 'border-gray-200 dark:border-gray-700/50 bg-white dark:bg-gray-800/80 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
         }
       `}
       style={{
         left: displayPos.x,
         top: displayPos.y,
-        width: cardW,
-        minHeight: cardH,
+        width: CARD_W,
+        minHeight: CARD_H,
       }}
       onMouseDown={handleMouseDown}
-      onClick={() => { if (!dragState.current.moved) { selectNode(node.id); if (node.status === 'skeleton') markExplored(node.id); } }}
+      onClick={() => { if (!dragState.current.moved) selectNode(node.id); }}
     >
-      <div className={isQuestion ? 'px-3 py-2' : 'px-3 py-2.5'}>
+      <div className="px-3 py-2.5">
         <div className="flex items-center gap-1.5 mb-1">
           <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded
             ${isQuestion
@@ -152,24 +133,18 @@ function NodeCard({
             }`}>
             {isQuestion ? 'Q' : 'A'}
           </span>
-          {!isQuestion && node.answer && (
-            <span className="text-[9px] text-gray-400 ml-auto">{node.answer.length} {t.chars}</span>
-          )}
           {dragState.current.dragging && dragState.current.moved ? (
-            <span className="text-[9px] text-gray-400 ml-auto">{t.dragging}</span>
+            <span className="text-[9px] text-gray-400 ml-auto">拖动中</span>
           ) : null}
         </div>
-        {isQuestion ? (
-          <div className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 leading-snug line-clamp-1">
-            {node.question || <span className="text-gray-300 dark:text-gray-600 italic">{emptyText}</span>}
-          </div>
-        ) : (
-          <div className="text-[12px] leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-3">
-            {node.answer
-              ? node.answer.slice(0, 120) + (node.answer.length > 120 ? '...' : '')
-              : <span className="text-gray-300 dark:text-gray-600 italic">{emptyText}</span>}
-          </div>
-        )}
+        <div className="text-[13px] font-medium text-gray-800 dark:text-gray-200 leading-snug line-clamp-2 text-left">
+          {isQuestion
+            ? (node.question || <span className="text-gray-300 dark:text-gray-600 italic">{emptyText}</span>)
+            : (node.answer
+              ? <span className="text-[12px] leading-relaxed text-gray-600 dark:text-gray-400">{node.answer.slice(0, 60)}{node.answer.length > 60 ? '...' : ''}</span>
+              : <span className="text-gray-300 dark:text-gray-600 italic">{emptyText}</span>)
+          }
+        </div>
       </div>
 
       {hasChildren ? (

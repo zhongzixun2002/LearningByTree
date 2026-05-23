@@ -32,24 +32,19 @@ export default function TreeCanvas() {
 
   const handlePanMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
-    if ((e.target as HTMLElement).closest('[data-node-card]')) return;
     if (!containerRef.current) return;
-    const startX = e.clientX;
-    const startY = e.clientY;
     panRef.current = {
       panning: true,
-      sx: startX,
-      sy: startY,
+      sx: e.clientX,
+      sy: e.clientY,
       sl: containerRef.current.scrollLeft,
       st: containerRef.current.scrollTop,
     };
     document.body.style.cursor = 'grabbing';
     document.body.style.userSelect = 'none';
 
-    let moved = false;
     const handleMove = (ev: MouseEvent) => {
       if (!panRef.current.panning) return;
-      if (Math.abs(ev.clientX - startX) > 3 || Math.abs(ev.clientY - startY) > 3) moved = true;
       containerRef.current!.scrollLeft = panRef.current.sl - (ev.clientX - panRef.current.sx);
       containerRef.current!.scrollTop = panRef.current.st - (ev.clientY - panRef.current.sy);
     };
@@ -57,9 +52,6 @@ export default function TreeCanvas() {
       panRef.current.panning = false;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      if (!moved) {
-        useTreeStore.getState().selectNode(null);
-      }
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mouseup', handleUp);
     };
@@ -125,12 +117,11 @@ export default function TreeCanvas() {
       const from = displayPositions[id];
       if (!from) continue;
       for (const childId of node.children) {
-        const child = nodes[childId];
         const to = displayPositions[childId];
-        if (visibleSet.has(childId) && to && child) {
+        if (visibleSet.has(childId) && to) {
           lines.push({
             key: `${id}-${childId}`,
-            path: getConnectorPath(from, to, node.type, child.type),
+            path: getConnectorPath(from, to),
           });
         }
       }
@@ -141,18 +132,8 @@ export default function TreeCanvas() {
   const canvasW = Math.max(bounds.width, 800);
   const canvasH = Math.max(bounds.height, 600);
 
-  // Auto-center canvas on first render
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const scrollX = Math.max(0, (canvasW * zoom - el.clientWidth) / 2);
-    const scrollY = Math.max(0, (canvasH * zoom - el.clientHeight) / 2);
-    el.scrollLeft = scrollX;
-    el.scrollTop = scrollY;
-  }, []);
-
   return (
-    <div ref={containerRef} className="absolute inset-0 overflow-auto bg-white/30 dark:bg-gray-900/30 cursor-grab active:cursor-grabbing" onMouseDown={handlePanMouseDown}>
+    <div ref={containerRef} className="flex-1 overflow-auto bg-white/30 dark:bg-gray-900/30 relative" onMouseDown={handlePanMouseDown}>
       <div style={{ width: canvasW * zoom, height: canvasH * zoom }}>
         <div
           className="relative"
@@ -193,7 +174,6 @@ export default function TreeCanvas() {
                 position={pos}
                 zoom={zoom}
                 onDrag={handleNodeDrag}
-                boundsOffset={{ x: bounds.minX, y: bounds.minY }}
               />
             );
           })}

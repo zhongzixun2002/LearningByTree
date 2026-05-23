@@ -8,7 +8,7 @@ import {
   getDescendantIds,
   downloadJSON,
 } from '../utils/treeHelpers';
-import { streamClaudeResponse, fetchSuggestions, generateLearningPath } from '../api/claude';
+import { streamClaudeResponse } from '../api/claude';
 
 interface TreeState {
   nodes: Record<string, TreeNode>;
@@ -16,14 +16,12 @@ interface TreeState {
   title: string;
   selectedNodeId: string | null;
   collapsedIds: Set<string>;
-  exploredIds: Set<string>;
   isStreaming: boolean;
-  suggestedQuestions: string[];
   apiKey: string;
   model: string;
   baseUrl: string;
 
-  selectNode: (id: string | null) => void;
+  selectNode: (id: string) => void;
   addNode: (type: 'question' | 'answer', parentId: string, text: string) => string;
   deleteNode: (nodeId: string) => void;
   updateNode: (nodeId: string, data: { question?: string; answer?: string }) => void;
@@ -37,8 +35,6 @@ interface TreeState {
   setBaseUrl: (url: string) => void;
   setTitle: (title: string) => void;
   askQuestion: (question: string) => Promise<void>;
-  generatePath: (topic: string) => Promise<void>;
-  markExplored: (nodeId: string) => void;
 }
 
 function loadSettings() {
@@ -126,14 +122,12 @@ export const useTreeStore = create<TreeState>((set, get) => ({
   title: initialTitle,
   selectedNodeId: initialRootId,
   collapsedIds: new Set<string>(),
-  exploredIds: new Set<string>(),
   isStreaming: false,
-  suggestedQuestions: [],
   apiKey: settings.apiKey,
   model: settings.model,
   baseUrl: settings.baseUrl,
 
-  selectNode: (id) => set({ selectedNodeId: id, suggestedQuestions: [] }),
+  selectNode: (id) => set({ selectedNodeId: id }),
 
   addNode: (type, parentId, text) => {
     const node = createNode(type, text, parentId);
@@ -246,7 +240,6 @@ export const useTreeStore = create<TreeState>((set, get) => ({
       title: data.metadata.title,
       selectedNodeId: rootId,
       collapsedIds: new Set<string>(),
-      exploredIds: new Set<string>(),
     });
   },
 
@@ -271,7 +264,6 @@ export const useTreeStore = create<TreeState>((set, get) => ({
       title: '新的学习树',
       selectedNodeId: rootNode.id,
       collapsedIds: new Set<string>(),
-      exploredIds: new Set<string>(),
     });
   },
 
@@ -291,60 +283,6 @@ export const useTreeStore = create<TreeState>((set, get) => ({
   },
 
   setTitle: (title) => set({ title }),
-
-  generatePath: async (topic: string) => {
-    const state = get();
-    if (!state.apiKey) throw new Error('请先配置 API Key');
-    const result = await generateLearningPath(state.apiKey, topic, state.model, state.baseUrl);
-
-    // Build tree from result
-    const nodes: Record<string, TreeNode> = {};
-
-    const rootNode = createNode('question', result.title, null);
-    rootNode.status = 'skeleton';
-    nodes[rootNode.id] = rootNode;
-
-    for (const subtopic of result.nodes) {
-      const subtopicNode = createNode('question', subtopic.question, rootNode.id);
-      subtopicNode.status = 'skeleton';
-      nodes[subtopicNode.id] = subtopicNode;
-      rootNode.children.push(subtopicNode.id);
-
-      if (subtopic.children) {
-        for (const child of subtopic.children) {
-          const childNode = createNode('question', child.question, subtopicNode.id);
-          childNode.status = 'skeleton';
-          nodes[childNode.id] = childNode;
-          subtopicNode.children.push(childNode.id);
-        }
-      }
-    }
-
-    set({
-      nodes,
-      rootId: rootNode.id,
-      title: result.title,
-      selectedNodeId: rootNode.id,
-      collapsedIds: new Set<string>(),
-      exploredIds: new Set<string>(),
-    });
-  },
-
-  markExplored: (nodeId: string) => {
-    set((state) => {
-      const node = state.nodes[nodeId];
-      if (!node) return state;
-      const next = new Set(state.exploredIds);
-      next.add(nodeId);
-      return {
-        exploredIds: next,
-        nodes: {
-          ...state.nodes,
-          [nodeId]: { ...node, status: 'explored', updatedAt: Date.now() },
-        },
-      };
-    });
-  },
 
   askQuestion: async (question) => {
     const state = get();
@@ -460,17 +398,6 @@ export const useTreeStore = create<TreeState>((set, get) => ({
       }));
     } finally {
       set({ isStreaming: false });
-      const finalState = get();
-      const qNode2 = finalState.nodes[qNode.id];
-      const aNode2 = finalState.nodes[aNode.id];
-      if (qNode2?.question && aNode2?.answer && !aNode2.answer.startsWith('**Error:**')) {
-        console.log('[Suggestions] Fetching suggestions for:', qNode2.question.slice(0, 50));
-        fetchSuggestions(finalState.apiKey, qNode2.question, aNode2.answer, finalState.model, finalState.baseUrl)
-          .then((suggestions) => {
-            console.log('[Suggestions] Got:', suggestions);
-            set({ suggestedQuestions: suggestions });
-          });
-      }
     }
   },
 }));

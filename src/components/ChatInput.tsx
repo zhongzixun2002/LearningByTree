@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, forwardRef } from 'react';
 import { useTreeStore } from '../store/useTreeStore';
-import { t } from '../i18n/en';
 
 const ChatInput = forwardRef<HTMLTextAreaElement>(function ChatInput(_, ref) {
   const [question, setQuestion] = useState('');
@@ -38,7 +37,7 @@ const ChatInput = forwardRef<HTMLTextAreaElement>(function ChatInput(_, ref) {
     try {
       await askQuestion(trimmed);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      alert(err instanceof Error ? err.message : '出错了');
     }
   };
 
@@ -50,26 +49,26 @@ const ChatInput = forwardRef<HTMLTextAreaElement>(function ChatInput(_, ref) {
   };
 
   const getHint = () => {
-    if (!selectedNode) return t.selectNodeFirst;
+    if (!selectedNode) return '请先选择一个节点';
     if (selectedNode.type === 'answer') {
       const parentQ = selectedNode.parentId ? nodes[selectedNode.parentId] : null;
       return parentQ?.question
-        ? t.extendFrom(parentQ.question.slice(0, 30) + (parentQ.question.length > 30 ? '...' : ''))
-        : t.extendFromAnswer;
+        ? `从「${parentQ.question.slice(0, 30)}${parentQ.question.length > 30 ? '...' : ''}」延伸提问`
+        : '从当前回答延伸提问';
     }
     if (selectedNode.type === 'question' && !selectedNode.question) {
-      return t.typeFirstQuestion;
+      return '在此提出你的第一个问题';
     }
-    return t.selectAnswerNode;
+    return '请先选择一个回答节点来延伸提问';
   };
 
   const getPlaceholder = () => {
-    if (isStreaming) return t.aiAnswering;
-    if (!selectedNode) return t.selectNodePlaceholder;
+    if (isStreaming) return 'AI 正在回答中...';
+    if (!selectedNode) return '请先选择一个节点...';
     if (selectedNode.type === 'question' && selectedNode.question) {
-      return t.selectAnswerPlaceholder;
+      return '请选择回答节点后再提问...';
     }
-    return t.inputPlaceholder;
+    return '输入你的问题，Enter 发送，Shift+Enter 换行...';
   };
 
   return (
@@ -109,10 +108,10 @@ const ChatInput = forwardRef<HTMLTextAreaElement>(function ChatInput(_, ref) {
             {isStreaming ? (
               <span className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                {t.answering}
+                回答中
               </span>
             ) : (
-              t.send
+              '发送 →'
             )}
           </button>
         </div>

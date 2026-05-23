@@ -6,7 +6,6 @@ export interface TreeNode {
   answer: string;
   children: string[];
   position?: { x: number; y: number };
-  status?: 'skeleton' | 'explored';
   createdAt: number;
   updatedAt: number;
 }
